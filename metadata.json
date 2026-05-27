@@ -1,0 +1,6 @@
+{
+  "name": "Hero Tasks",
+  "description": "Gamified to-do list for kids with star rewards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
