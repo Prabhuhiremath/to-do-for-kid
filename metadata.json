@@ -1,6 +1,6 @@
 {
-  "name": "Hero Tasks",
-  "description": "Gamified to-do list for kids with star rewards.",
+  "name": "KiddoSpark",
+  "description": "Educational and entertaining app for kids 4-12 with games, drawing, and learning modules.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -2,15 +2,13 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val FunBlue = Color(0xFF29B6F6)
-val FunBlueDark = Color(0xFF0288D1)
-val BrightYellow = Color(0xFFFFCA28)
-val ActionGreen = Color(0xFF66BB6A)
-val ActionRed = Color(0xFFEF5350)
-val CoralPink = Color(0xFFEC407A)
-val FunPurple = Color(0xFFAB47BC)
+val SkyBlue = Color(0xFF64B5F6)
+val BrightYellow = Color(0xFFFFD54F)
+val CoralOrange = Color(0xFFFF8A65)
+val MintGreen = Color(0xFF81C784)
+val PurpleAccent = Color(0xFFBA68C8)
 
-val BackgroundLight = Color(0xFFE1F5FE)
+val BackgroundLight = Color(0xFFF0F4F8)
 val CardLight = Color(0xFFFFFFFF)
 
 val BackgroundDark = Color(0xFF102A43)
