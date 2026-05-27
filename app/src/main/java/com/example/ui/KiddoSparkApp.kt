@@ -49,10 +49,14 @@ fun KiddoSparkApp() {
             startDestination = "home",
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("home") { HomeScreen() }
-            composable("learn") { LearnScreen() }
+            composable("home") { HomeScreen(navController) }
+            composable("learn") { LearnScreen(navController) }
             composable("create") { CreateScreen() }
             composable("parent") { ParentDashboardScreen() }
+            composable("topic/{topicName}") { backStackEntry ->
+                val topic = backStackEntry.arguments?.getString("topicName") ?: ""
+                TopicScreen(topic, navController)
+            }
         }
     }
 }
@@ -100,7 +104,7 @@ fun KiddoBottomNav(navController: NavHostController) {
 data class BottomNavItem(val route: String, val title: String, val icon: ImageVector)
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavHostController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -161,21 +165,23 @@ fun HomeScreen() {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(favorites) { cat ->
-                CategoryCard(cat)
+                CategoryCard(cat) {
+                    navController.navigate("topic/${cat.name}")
+                }
             }
         }
     }
 }
 
 @Composable
-fun CategoryCard(category: Category) {
+fun CategoryCard(category: Category, onClick: () -> Unit = {}) {
     Card(
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = category.color.copy(alpha = 0.2f)),
         modifier = Modifier
             .fillMaxWidth()
             .height(120.dp)
-            .clickable { }
+            .clickable { onClick() }
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -192,7 +198,7 @@ fun CategoryCard(category: Category) {
 data class Category(val name: String, val icon: ImageVector, val color: Color)
 
 @Composable
-fun LearnScreen() {
+fun LearnScreen(navController: NavHostController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -220,7 +226,9 @@ fun LearnScreen() {
                 Card(
                     shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(containerColor = topic.color.copy(alpha = 0.2f)),
-                    modifier = Modifier.fillMaxWidth().height(140.dp).clickable { }
+                    modifier = Modifier.fillMaxWidth().height(140.dp).clickable { 
+                        navController.navigate("topic/${topic.name}")
+                    }
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -322,6 +330,9 @@ fun Center(content: @Composable () -> Unit) {
 
 @Composable
 fun ParentDashboardScreen() {
+    var screenTimeEnabled by remember { mutableStateOf(true) }
+    var appLock by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -344,5 +355,133 @@ fun ParentDashboardScreen() {
                 LinearProgressIndicator(progress = { 0.6f }, modifier = Modifier.fillMaxWidth(), color = MintGreen)
             }
         }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        Text("Controls", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
+        Card(shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Daily Screen Time Limit (2h)", style = MaterialTheme.typography.bodyLarge)
+                    Switch(checked = screenTimeEnabled, onCheckedChange = { screenTimeEnabled = it })
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Safe App Lock", style = MaterialTheme.typography.bodyLarge)
+                    Switch(checked = appLock, onCheckedChange = { appLock = it })
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopicScreen(topic: String, navController: NavHostController) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(topic, fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier.padding(innerPadding).fillMaxSize().padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            if (topic == "Math" || topic == "Numbers") {
+                MathGame()
+            } else if (topic == "Alphabets") {
+                AlphabetGame()
+            } else if (topic == "Stories") {
+                StoryView()
+            } else {
+                Icon(Icons.Filled.Star, contentDescription = null, modifier = Modifier.size(100.dp), tint = BrightYellow)
+                Spacer(modifier = Modifier.height(24.dp))
+                Text("Lots of fun activities for $topic coming soon!", style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
+            }
+        }
+    }
+}
+
+@Composable
+fun MathGame() {
+    var num1 by remember { mutableIntStateOf((1..10).random()) }
+    var num2 by remember { mutableIntStateOf((1..10).random()) }
+    var answer by remember { mutableStateOf("") }
+    var message by remember { mutableStateOf("") }
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+        Text("What is $num1 + $num2?", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(24.dp))
+        OutlinedTextField(
+            value = answer,
+            onValueChange = { answer = it },
+            label = { Text("Answer") },
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth(0.6f)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = {
+            if (answer.toIntOrNull() == num1 + num2) {
+                message = "Correct! 🌟"
+                num1 = (1..10).random()
+                num2 = (1..10).random()
+                answer = ""
+            } else {
+                message = "Oops, try again!"
+            }
+        }) {
+            Text("Check")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(message, style = MaterialTheme.typography.titleLarge, color = if (message.startsWith("Correct")) MintGreen else Color.Red)
+    }
+}
+
+@Composable
+fun AlphabetGame() {
+    val letters = ('A'..'Z').toList()
+    var currentIndex by remember { mutableIntStateOf(0) }
+    
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Card(
+            shape = RoundedCornerShape(32.dp),
+            colors = CardDefaults.cardColors(containerColor = CoralOrange.copy(alpha = 0.2f)),
+            modifier = Modifier.size(200.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                Text(letters[currentIndex].toString(), style = MaterialTheme.typography.displayLarge.copy(fontSize = 120.sp, fontWeight = FontWeight.ExtraBold), color = CoralOrange)
+            }
+        }
+        Spacer(modifier = Modifier.height(32.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Button(onClick = { if (currentIndex > 0) currentIndex-- }) { Text("Previous") }
+            Button(onClick = { if (currentIndex < letters.size - 1) currentIndex++ }) { Text("Next") }
+        }
+    }
+}
+
+@Composable
+fun StoryView() {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text("The Brave Little Lion", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            "Once upon a time in a sunny savanna, there lived a small lion named Leo. " +
+            "Leo was smaller than the other lions, but he had a very loud ROAR! " +
+            "One day, Leo helped a little bird who was lost. The bird became his best friend, " +
+            "and they explored the savanna together.",
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Justify,
+            modifier = Modifier.padding(16.dp)
+        )
+        Icon(Icons.Filled.Pets, contentDescription = null, modifier = Modifier.size(64.dp), tint = MintGreen)
     }
 }
